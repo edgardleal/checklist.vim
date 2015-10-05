@@ -17,10 +17,17 @@ else
 endif
 
 "let manage_checklist = 1
+"
+function! Status()
+    echo 'Ok'
+    echo getline(line("."))
+
+endfunction
 
 function! MakeItem ()
   " Define variables
   let l:line = getline(line(".") - 1)
+  echo l:line
 
   " Check what the previous line contains
   function! CheckPrevLine ()
@@ -37,17 +44,20 @@ function! MakeItem ()
     exe 'normal ddo+ '
     return ''
   elseif match(l:line, '\V+ ') >= 0
-    exe 'normal i* '
+    exe 'normal i[ ] '
     exe 'normal v>'
     return ''
-  elseif match(l:line, '\V* ') >= 0
-    exe 'normal i* '
+  elseif match(l:line, '\V[ ] ') >= 0
+    exe 'normal i[ ] '
+    exe 'normal v>'
     return ''
-  elseif match(l:line, '\V× ') >= 0
-    exe 'normal i* '
+  elseif match(l:line, '\V[x] ') >= 0
+    exe 'normal i[ ] '
+    exe 'normal v>'
     return ''
   else
-    return ''
+    return 'Syntax error'
+    " return ''
   endif
 endfunction
 
@@ -57,22 +67,25 @@ function! ToggleItem ()
   let l:line = getline(line(".") - 1)
 
   " Toggle checkboxes and timestamps
-  if match(current_line,'\V* ') >= 0
+  if match(current_line,'\V\[ \] ') >= 0
     echo "Item checked."
-    exe 's/\V* /× /'
+    exe 's/\[ \] /[x] /'
     let time = strftime("%d.%m.%Y at %I:%M %p")
     if g:checklist_use_timestamps == 1
-      exe "normal a ".time." :"
+      exe "normal f a".time." :"
     endif
     return ""
-  elseif match(current_line,'\V× ') >= 0
+  elseif match(current_line,'\V\[x\] ') >= 0
     echo "Item unchecked."
     if g:checklist_use_timestamps == 1
-      exe 's/\× \(\d\{2}\.\d\{2}\.\d\{4} at \d\{2}:\d\{2} [A|P]M :\)\?/*/i'
+      " exe 's/\[×\] \(\d\{2}\.\d\{2}\.\d\{4} at \d\{2}:\d\{2} [A|P]M :\)\?/[ ]/i'
+      exe 's/\[x\]/[ ]/i'
     elseif g:checklist_use_timestamps == 0
-      exe 's/\V× /* /i'
+      exe 's/\V\[x\] /[ ] /i'
     endif
     return ""
+  elseif
+      echo 'Item not found in this line '
   endif
 
   " Toggle Folds
